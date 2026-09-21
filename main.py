@@ -172,6 +172,44 @@ def section_time(df: pd.DataFrame) -> None:
 
     insight("(여기에 한 문장을 적어 주세요)")
 
+    # --- 그래프 1-5: 월 × 요일별 일관객 합계 (히트맵) -----------------------
+    st.subheader("1-5. 월 × 요일별 일관객 합계")
+
+    weekday_names = ["월", "화", "수", "목", "금", "토", "일"]  # 월요일부터 일요일
+    heat_df = pd.DataFrame(
+        {
+            "월": df["날짜"].dt.month,
+            "요일": df["날짜"].dt.dayofweek,  # 월요일=0 ... 일요일=6
+            "일관객": df["일관객"],
+        }
+    )
+    pivot = (
+        heat_df.pivot_table(index="월", columns="요일", values="일관객", aggfunc="sum")
+        .reindex(columns=range(7))  # 요일을 월~일 순서로 고정
+        .fillna(0)
+        .sort_index()
+    )
+
+    fig5 = px.imshow(
+        pivot.values,
+        x=weekday_names,
+        y=[f"{m}월" for m in pivot.index],
+        color_continuous_scale="Blues",  # 관객이 많을수록 진한 파랑
+        aspect="auto",
+        title="월 × 요일별 일관객 합계",
+    )
+    fig5.update_traces(
+        hovertemplate="%{y} %{x}요일<br>일관객 합계: %{z:,.0f}명<extra></extra>"
+    )
+    fig5.update_layout(
+        xaxis_title="요일",
+        yaxis_title="월",
+        coloraxis_colorbar_title="일관객 합계(명)",
+    )
+    st.plotly_chart(fig5, use_container_width=True)
+
+    insight("(여기에 한 문장을 적어 주세요)")
+
 
 # ---------------------------------------------------------------------------
 # 구역 2, 3, ... : 새 그래프는 아래 방식으로 추가하세요
@@ -203,4 +241,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-    
