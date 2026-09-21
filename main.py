@@ -61,6 +61,38 @@ def section_time(df: pd.DataFrame) -> None:
 
     insight("(여기에 한 문장을 적어 주세요)")
 
+    # --- 그래프 1-2: 일관객 합계 상위 5편 비교 ------------------------------
+    st.subheader("1-2. 일관객 합계 상위 5편 비교")
+
+    top5 = movie_order[:5]  # 위에서 일관객 합계 내림차순으로 정렬해 둔 목록
+    top5_df = df[df["영화명"].isin(top5)].sort_values("날짜")
+
+    fig2 = px.line(
+        top5_df,
+        x="날짜",
+        y="일관객",
+        color="영화명",
+        category_orders={"영화명": top5},  # 범례를 합계 큰 순서로
+        title="일관객 합계 상위 5편 - 날짜별 일관객",
+    )
+    fig2.update_traces(
+        hovertemplate=(
+            "%{fullData.name}<br>날짜: %{x|%Y-%m-%d}<br>"
+            "일관객: %{y:,}명<extra></extra>"
+        )
+    )
+    fig2.update_layout(
+        xaxis_title="날짜",
+        yaxis_title="일관객(명)",
+        legend_title_text="영화 (클릭: 켜고 끄기)",
+        hovermode="closest",
+    )
+    # 범례 항목을 한 번 클릭하면 그 영화만 껐다 켜고,
+    # 더블클릭하면 그 영화만 남겨서 볼 수 있음 (plotly 기본 동작)
+    st.plotly_chart(fig2, use_container_width=True)
+
+    insight("(여기에 한 문장을 적어 주세요)")
+
 
 # ---------------------------------------------------------------------------
 # 구역 2, 3, ... : 새 그래프는 아래 방식으로 추가하세요
