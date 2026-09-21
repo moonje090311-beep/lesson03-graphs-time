@@ -139,6 +139,39 @@ def section_time(df: pd.DataFrame) -> None:
 
     insight("(여기에 한 문장을 적어 주세요)")
 
+    # --- 그래프 1-4: 일관객 합계 TOP 10 (가로 막대) --------------------------
+    st.subheader("1-4. 일관객 합계 TOP 10 영화")
+
+    movie_total = (
+        df.groupby("영화명")
+        .agg(일관객합계=("일관객", "sum"), 순위권날수=("날짜", "nunique"))
+        .reset_index()
+        .nlargest(10, "일관객합계")  # 관객이 많은 순서로 10편
+    )
+
+    fig4 = px.bar(
+        movie_total,
+        x="일관객합계",
+        y="영화명",
+        orientation="h",
+        custom_data=["순위권날수"],
+        title="영화별 일관객 합계 TOP 10",
+    )
+    fig4.update_traces(
+        hovertemplate=(
+            "%{y}<br>일관객 합계: %{x:,}명<br>"
+            "10위권에 든 날수: %{customdata[0]}일<extra></extra>"
+        )
+    )
+    fig4.update_layout(
+        xaxis_title="일관객 합계(명)",
+        yaxis_title="",
+        yaxis_autorange="reversed",  # 데이터가 큰 순서라서, 뒤집어야 1위가 맨 위
+    )
+    st.plotly_chart(fig4, use_container_width=True)
+
+    insight("(여기에 한 문장을 적어 주세요)")
+
 
 # ---------------------------------------------------------------------------
 # 구역 2, 3, ... : 새 그래프는 아래 방식으로 추가하세요
