@@ -1,5 +1,6 @@
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 DATA_URL = (
@@ -90,6 +91,51 @@ def section_time(df: pd.DataFrame) -> None:
     # 범례 항목을 한 번 클릭하면 그 영화만 껐다 켜고,
     # 더블클릭하면 그 영화만 남겨서 볼 수 있음 (plotly 기본 동작)
     st.plotly_chart(fig2, use_container_width=True)
+
+    insight("(여기에 한 문장을 적어 주세요)")
+
+    # --- 그래프 1-3: 날짜별 10위권 일관객 합계 (영역 그래프) ----------------
+    st.subheader("1-3. 날짜별 10위권 일관객 합계")
+
+    daily = df.groupby("날짜", as_index=False)["일관객"].sum()
+    top_days = daily.nlargest(3, "일관객").reset_index(drop=True)
+
+    fig3 = px.area(daily, x="날짜", y="일관객", title="날짜별 10위권 일관객 합계")
+    fig3.update_traces(
+        hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계: %{y:,}명<extra></extra>"
+    )
+
+    # 합계가 가장 컸던 3일: 점으로 표시
+    fig3.add_trace(
+        go.Scatter(
+            x=top_days["날짜"],
+            y=top_days["일관객"],
+            mode="markers",
+            marker=dict(size=10, color="crimson", line=dict(width=1, color="white")),
+            showlegend=False,
+            hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계: %{y:,}명<extra></extra>",
+        )
+    )
+    # ...그리고 날짜를 적은 말풍선. 가까운 날짜끼리 글자가 겹치지 않게 높이를 달리함
+    for i, row in top_days.iterrows():
+        fig3.add_annotation(
+            x=row["날짜"],
+            y=row["일관객"],
+            text=f"{i + 1}위 {row['날짜']:%Y-%m-%d}<br>{row['일관객']:,}명",
+            showarrow=True,
+            arrowhead=2,
+            ax=0,
+            ay=-40 - 30 * i,
+            bgcolor="rgba(255,255,255,0.85)",
+            bordercolor="crimson",
+            font=dict(size=12),
+        )
+    fig3.update_layout(
+        xaxis_title="날짜",
+        yaxis_title="10위권 일관객 합계(명)",
+        yaxis_range=[0, daily["일관객"].max() * 1.35],  # 말풍선이 들어갈 여백
+    )
+    st.plotly_chart(fig3, use_container_width=True)
 
     insight("(여기에 한 문장을 적어 주세요)")
 
